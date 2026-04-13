@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>✨ Ambassador HQ</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0a0f;
+    --surface: #16111c;
+    --card: #1e1728;
+    --border: #2e2440;
+    --gold: #f5c842;
+    --rose: #f07ea3;
+    --blush: #ffd6e7;
+    --mint: #7effd4;
+    --purple: #c084fc;
+    --text: #f0eaf8;
+    --muted: #8b7aa0;
+    --danger: #ff6b8a;
+    --success: #7effd4;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Background sparkle effect */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background:
+      radial-gradient(ellipse at 20% 10%, rgba(240,126,163,0.08) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(192,132,252,0.08) 0%, transparent 50%),
+      radial-gradient(ellipse at 60% 30%, rgba(245,200,66,0.05) 0%, transparent 40%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container { position: relative; z-index: 1; max-width: 520px; margin: 0 auto; padding: 0 16px 100px; }
+
+  /* Header */
+  .header {
+    text-align: center;
+    padding: 36px 0 24px;
+    position: relative;
+  }
+  .header-crown {
+    font-size: 2rem;
+    animation: float 3s ease-in-out infinite;
+  }
+  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+
+  .header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.2rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--gold) 0%, var(--rose) 50%, var(--purple) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.1;
+    margin-top: 4px;
+  }
+  .header p { color: var(--muted); font-size: 0.85rem; margin-top: 6px; letter-spacing: 0.05em; text-transform: uppercase; }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: 8px;
+    margin: 20px 0;
+    background: var(--surface);
+    border-radius: 16px;
+    padding: 6px;
+    border: 1px solid var(--border);
+  }
+  .tab {
+    flex: 1;
+    padding: 10px 6px;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 500;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.25s;
+    text-align: center;
+  }
+  .tab.active {
+    background: linear-gradient(135deg, var(--rose), var(--purple));
+    color: white;
+    font-weight: 600;
+  }
+
+  /* Panels */
+  .panel { display: none; }
+  .panel.active { display: block; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+  /* Stat cards */
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+  .stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 18px 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    border-radius: 18px 18px 0 0;
+  }
+  .stat-card.gold::before { background: linear-gradient(90deg, var(--gold), #ffb347); }
+  .stat-card.rose::before { background: linear-gradient(90deg, var(--rose), var(--blush)); }
+  .stat-card.mint::before { background: linear-gradient(90deg, var(--mint), #00d2ff); }
+  .stat-card.purple::before { background: linear-gradient(90deg, var(--purple), var(--rose)); }
+  .stat-card .label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+  .stat-card .value { font-family: 'Playfair Display', serif; font-size: 1.7rem; font-weight: 700; }
+  .stat-card.gold .value { color: var(--gold); }
+  .stat-card.rose .value { color: var(--rose); }
+  .stat-card.mint .value { color: var(--mint); }
+  .stat-card.purple .value { color: var(--purple); }
+  .stat-card .sub { font-size: 0.75rem; color: var(--muted); margin-top: 4px; }
+
+  /* Wide stat card */
+  .stat-wide {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 18px 20px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .stat-wide .label { font-size: 0.78rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  .stat-wide .value { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 700; }
+
+  /* Tax card */
+  .tax-card {
+    background: linear-gradient(135deg, rgba(245,200,66,0.1), rgba(240,126,163,0.1));
+    border: 1px solid rgba(245,200,66,0.3);
+    border-radius: 18px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .tax-card h3 { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: var(--gold); margin-bottom: 14px; }
+  .tax-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .tax-row:last-child { border-bottom: none; }
+  .tax-row .tl { font-size: 0.82rem; color: var(--muted); }
+  .tax-row .tv { font-size: 0.9rem; font-weight: 600; }
+
+  /* Chart cards */
+  .chart-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .chart-card h3 { font-family: 'Playfair Display', serif; font-size: 1rem; color: var(--text); margin-bottom: 16px; }
+  .chart-card canvas { width: 100% !important; }
+
+  /* Form */
+  .form-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 24px 20px;
+    margin-bottom: 16px;
+  }
+  .form-card h3 { font-family: 'Playfair Display', serif; font-size: 1.2rem; margin-bottom: 20px; color: var(--text); }
+
+  .field-group { margin-bottom: 16px; }
+  .field-group label { display: block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 7px; }
+  .field-group input, .field-group select {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 13px 14px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.2s;
+    -webkit-appearance: none;
+  }
+  .field-group input:focus { border-color: var(--rose); }
+
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .field-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+
+  .section-title {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--rose);
+    margin: 20px 0 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: rgba(240,126,163,0.2); }
+
+  .calc-preview {
+    background: var(--surface);
+    border-radius: 14px;
+    padding: 16px;
+    margin: 16px 0;
+    border: 1px solid var(--border);
+  }
+  .calc-row { display: flex; justify-content: space-between; padding: 5px 0; font-size: 0.85rem; }
+  .calc-row.total { border-top: 1px solid var(--border); margin-top: 6px; padding-top: 10px; font-weight: 600; font-size: 0.95rem; }
+  .calc-row .cv-pos { color: var(--mint); }
+  .calc-row .cv-neg { color: var(--danger); }
+  .calc-row .cv-profit { color: var(--gold); font-family: 'Playfair Display', serif; font-size: 1.1rem; }
+
+  .btn-submit {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, var(--rose), var(--purple));
+    border: none;
+    border-radius: 16px;
+    color: white;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    letter-spacing: 0.03em;
+    transition: opacity 0.2s, transform 0.15s;
+    margin-top: 8px;
+  }
+  .btn-submit:active { opacity: 0.85; transform: scale(0.98); }
+
+  /* Event list */
+  .event-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 18px;
+    margin-bottom: 12px;
+    transition: border-color 0.2s;
+    position: relative;
+  }
+  .event-card:active { border-color: var(--rose); }
+  .event-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+  .event-type {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .event-date { font-size: 0.75rem; color: var(--muted); }
+  .event-profit {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--gold);
+  }
+  .event-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .chip {
+    font-size: 0.72rem;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-weight: 500;
+  }
+  .chip-pay { background: rgba(126,255,212,0.12); color: var(--mint); }
+  .chip-miles { background: rgba(245,200,66,0.12); color: var(--gold); }
+  .chip-exp { background: rgba(240,126,163,0.12); color: var(--rose); }
+  .chip-hours { background: rgba(192,132,252,0.12); color: var(--purple); }
+
+  .btn-delete {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    background: rgba(255,107,138,0.15);
+    border: none;
+    border-radius: 8px;
+    color: var(--danger);
+    font-size: 0.75rem;
+    padding: 4px 8px;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 50px 20px;
+    color: var(--muted);
+  }
+  .empty-state .emoji { font-size: 3rem; margin-bottom: 12px; }
+  .empty-state p { font-size: 0.9rem; }
+
+  /* Filter bar */
+  .filter-bar { display: flex; gap: 8px; margin-bottom: 16px; overflow-x: auto; padding-bottom: 4px; }
+  .filter-pill {
+    flex-shrink: 0;
+    padding: 7px 16px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    font-size: 0.78rem;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .filter-pill.active {
+    background: linear-gradient(135deg, rgba(240,126,163,0.2), rgba(192,132,252,0.2));
+    border-color: var(--rose);
+    color: var(--text);
+  }
+
+  /* Settings */
+  .settings-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 20px;
+    margin-bottom: 14px;
+  }
+  .settings-card h3 { font-family: 'Playfair Display', serif; font-size: 1rem; color: var(--rose); margin-bottom: 14px; }
+  .setting-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .setting-row:last-child { border-bottom: none; }
+  .setting-row .sl { font-size: 0.85rem; }
+  .setting-row .sd { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+  .setting-row input[type=number] {
+    width: 90px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 8px 10px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    text-align: right;
+    outline: none;
+  }
+
+  /* IRS mileage note */
+  .info-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(245,200,66,0.1);
+    border: 1px solid rgba(245,200,66,0.25);
+    border-radius: 10px;
+    padding: 8px 12px;
+    font-size: 0.75rem;
+    color: var(--gold);
+    margin-bottom: 16px;
+    width: 100%;
+  }
+
+  /* Achievement badges */
+  .badge-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+  .badge {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 12px 14px;
+    text-align: center;
+    flex: 1;
+    min-width: 80px;
+  }
+  .badge .bi { font-size: 1.4rem; }
+  .badge .bl { font-size: 0.65rem; color: var(--muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .badge .bv { font-size: 0.85rem; font-weight: 600; color: var(--text); margin-top: 2px; }
+
+  /* Calendar */
+  .cal-dow { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; padding: 4px 0; font-weight: 600; }
+  .cal-day {
+    aspect-ratio: 1;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.82rem;
+    cursor: pointer;
+    position: relative;
+    transition: background 0.15s;
+    border: 1px solid transparent;
+    padding: 2px;
+  }
+  .cal-day.empty { cursor: default; }
+  .cal-day.today { border-color: var(--rose); color: var(--rose); font-weight: 700; }
+  .cal-day.has-event { background: rgba(240,126,163,0.15); border-color: rgba(240,126,163,0.35); }
+  .cal-day.has-event:active { background: rgba(240,126,163,0.3); }
+  .cal-day .day-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--rose); margin-top: 2px; }
+  .cal-day .day-profit { font-size: 0.55rem; color: var(--gold); font-weight: 600; line-height: 1; }
+  .cal-day.multi-event { background: rgba(192,132,252,0.15); border-color: rgba(192,132,252,0.4); }
+  .cal-summary-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--border); font-size: 0.84rem; }
+  .cal-summary-row:last-child { border-bottom: none; }
+  .cal-summary-row .cs-name { color: var(--text); font-weight: 500; max-width: 55%; }
+  .cal-summary-row .cs-date { color: var(--muted); font-size: 0.75rem; }
+  .cal-summary-row .cs-profit { color: var(--gold); font-weight: 700; font-family: 'Playfair Display', serif; }
+
+  scrollbar-width: none;
+  ::-webkit-scrollbar { display: none; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <div class="header-crown">👑</div>
+    <h1>Ambassador HQ</h1>
+    <p>Your brand. Your money. Your empire.</p>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('dashboard')">✨ Stats</button>
+    <button class="tab" onclick="switchTab('add')">➕ Add</button>
+    <button class="tab" onclick="switchTab('calendar')">📅 Cal</button>
+    <button class="tab" onclick="switchTab('events')">📋 Jobs</button>
+    <button class="tab" onclick="switchTab('settings')">⚙️ Setup</button>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="panel-dashboard" class="panel active">
+    <div class="stat-grid">
+      <div class="stat-card gold">
+        <div class="label">Total Earned</div>
+        <div class="value" id="stat-gross">$0</div>
+        <div class="sub" id="stat-jobs">0 events</div>
+      </div>
+      <div class="stat-card mint">
+        <div class="label">Net Profit</div>
+        <div class="value" id="stat-net">$0</div>
+        <div class="sub" id="stat-margin">0% margin</div>
+      </div>
+      <div class="stat-card rose">
+        <div class="label">Total Expenses</div>
+        <div class="value" id="stat-expenses">$0</div>
+        <div class="sub" id="stat-miles-total">0 miles driven</div>
+      </div>
+      <div class="stat-card purple">
+        <div class="label">Hours Worked</div>
+        <div class="value" id="stat-hours">0h</div>
+        <div class="sub" id="stat-hourly">$0/hr effective</div>
+      </div>
+    </div>
+
+    <div class="badge-row" id="badge-row"></div>
+
+    <div class="tax-card">
+      <h3>💰 Tax Estimate (2025)</h3>
+      <div class="tax-row">
+        <span class="tl">Net Self-Employment Income</span>
+        <span class="tv" id="tax-net-income" style="color:var(--gold)">$0.00</span>
+      </div>
+      <div class="tax-row">
+        <span class="tl">SE Tax (15.3%)</span>
+        <span class="tv" id="tax-se" style="color:var(--danger)">$0.00</span>
+      </div>
+      <div class="tax-row">
+        <span class="tl">Deductible SE (½)</span>
+        <span class="tv" id="tax-se-deduct" style="color:var(--mint)">$0.00</span>
+      </div>
+      <div class="tax-row">
+        <span class="tl">Est. Federal Income Tax</span>
+        <span class="tv" id="tax-federal" style="color:var(--danger)">$0.00</span>
+      </div>
+      <div class="tax-row" style="margin-top:6px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.08)">
+        <span class="tl" style="font-weight:600; color:var(--text)">💸 Set Aside (~30%)</span>
+        <span class="tv" id="tax-setaside" style="color:var(--rose); font-size:1.05rem; font-weight:700">$0.00</span>
+      </div>
+      <div class="tax-row">
+        <span class="tl">IRS Mileage Deduction</span>
+        <span class="tv" id="tax-mileage" style="color:var(--mint)">$0.00</span>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <h3>💵 Income vs Expenses by Month</h3>
+      <canvas id="chart-monthly" height="200"></canvas>
+    </div>
+
+    <div class="chart-card">
+      <h3>🍩 Where the Money Goes</h3>
+      <canvas id="chart-donut" height="220"></canvas>
+    </div>
+
+    <div class="chart-card">
+      <h3>📈 Profit Per Event</h3>
+      <canvas id="chart-profit" height="180"></canvas>
+    </div>
+
+    <div class="chart-card">
+      <h3>🗂️ Events by Type</h3>
+      <canvas id="chart-types" height="200"></canvas>
+    </div>
+  </div>
+
+  <!-- ADD JOB -->
+  <div id="panel-add" class="panel">
+    <div class="form-card">
+      <h3>✨ Log a New Event</h3>
+
+      <div class="field-row">
+        <div class="field-group">
+          <label>Date</label>
+          <input type="date" id="f-date">
+        </div>
+        <div class="field-group">
+          <label>Event Type</label>
+          <input type="text" id="f-type" list="type-suggestions" placeholder="e.g. Brand Ambassador" autocomplete="off">
+          <datalist id="type-suggestions">
+            <option value="Brand Ambassador">
+            <option value="Promotional">
+            <option value="Trade Show">
+            <option value="Product Launch">
+            <option value="Social Media">
+            <option value="Influencer Event">
+            <option value="Street Team">
+            <option value="Retail Activation">
+            <option value="Sampling Event">
+            <option value="Corporate Event">
+          </datalist>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field-group">
+          <label>Pay Rate ($/hr) <span style="color:var(--muted);font-size:0.68rem;text-transform:none;letter-spacing:0">optional</span></label>
+          <input type="number" id="f-rate" placeholder="leave blank if commission" step="0.01" min="0">
+        </div>
+        <div class="field-group">
+          <label>Hours Worked</label>
+          <input type="number" id="f-hours" placeholder="6" step="0.5" min="0">
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label>💰 Total Commission <span style="color:var(--muted);font-size:0.68rem;text-transform:none;letter-spacing:0">use when no hourly rate</span></label>
+        <input type="number" id="f-commission" placeholder="0.00 — leave blank if hourly" step="0.01" min="0">
+      </div>
+
+      <div class="section-title">🚗 Mileage</div>
+      <div class="field-row">
+        <div class="field-group">
+          <label>Start Odometer</label>
+          <input type="number" id="f-mile-start" placeholder="0" step="1" min="0">
+        </div>
+        <div class="field-group">
+          <label>End Odometer</label>
+          <input type="number" id="f-mile-end" placeholder="0" step="1" min="0">
+        </div>
+      </div>
+
+      <div class="section-title">💸 Expenses</div>
+      <div class="field-row">
+        <div class="field-group">
+          <label>⛽ Gas</label>
+          <input type="number" id="f-gas" placeholder="0.00" step="0.01" min="0">
+        </div>
+        <div class="field-group">
+          <label>👗 Outfit</label>
+          <input type="number" id="f-outfit" placeholder="0.00" step="0.01" min="0">
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field-group">
+          <label>💅 Nails/Beauty</label>
+          <input type="number" id="f-beauty" placeholder="0.00" step="0.01" min="0">
+        </div>
+        <div class="field-group">
+          <label>📦 Other</label>
+          <input type="number" id="f-other" placeholder="0.00" step="0.01" min="0">
+        </div>
+      </div>
+
+      <div class="calc-preview" id="calc-preview">
+        <div class="calc-row"><span>Gross Pay</span><span class="cv-pos" id="cp-gross">$0.00</span></div>
+        <div class="calc-row"><span>Total Expenses</span><span class="cv-neg" id="cp-exp">-$0.00</span></div>
+        <div class="calc-row"><span>Miles Driven</span><span id="cp-miles" style="color:var(--gold)">0 mi</span></div>
+        <div class="calc-row total"><span>Net Profit</span><span class="cv-profit" id="cp-net">$0.00</span></div>
+      </div>
+
+      <button class="btn-submit" onclick="saveJob()">✨ Save This Event</button>
+    </div>
+  </div>
+
+  <!-- CALENDAR -->
+  <div id="panel-calendar" class="panel">
+    <div class="chart-card" style="margin-bottom:16px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+        <button onclick="calNav(-1)" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:8px 14px;font-size:1rem;cursor:pointer;">‹</button>
+        <h3 id="cal-title" style="margin:0;font-family:'Playfair Display',serif;font-size:1.15rem;"></h3>
+        <button onclick="calNav(1)" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:8px 14px;font-size:1rem;cursor:pointer;">›</button>
+      </div>
+      <div id="cal-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center;"></div>
+    </div>
+    <div id="cal-event-detail" style="display:none;" class="chart-card">
+      <h3 id="cal-detail-title" style="margin-bottom:12px;"></h3>
+      <div id="cal-detail-body"></div>
+    </div>
+    <div class="chart-card">
+      <h3 style="margin-bottom:14px;">📆 This Month Summary</h3>
+      <div id="cal-month-summary"></div>
+    </div>
+  </div>
+
+  <!-- EVENTS LIST -->
+  <div id="panel-events" class="panel">
+    <div class="filter-bar" id="filter-bar">
+      <button class="filter-pill active" onclick="filterEvents('All', this)">All</button>
+    </div>
+    <div id="events-list"></div>
+  </div>
+
+  <!-- SETTINGS -->
+  <div id="panel-settings" class="panel">
+    <div class="settings-card">
+      <h3>Tax & Rate Settings</h3>
+      <div class="setting-row">
+        <div><div class="sl">Federal Tax Bracket</div><div class="sd">Estimated marginal rate</div></div>
+        <input type="number" id="s-federal" value="12" min="0" max="37" step="1" onchange="saveSettings()"> 
+      </div>
+      <div class="setting-row">
+        <div><div class="sl">State Tax Rate %</div><div class="sd">Enter 0 if no state tax</div></div>
+        <input type="number" id="s-state" value="0" min="0" max="15" step="0.1" onchange="saveSettings()">
+      </div>
+      <div class="setting-row">
+        <div><div class="sl">IRS Mileage Rate (¢/mi)</div><div class="sd">2025 rate: 70¢/mile</div></div>
+        <input type="number" id="s-mileage" value="70" min="50" max="90" step="1" onchange="saveSettings()">
+      </div>
+    </div>
+
+    <div class="info-badge">
+      ⚠️ Tax estimates are approximate. Always consult a tax professional or use TurboTax Self-Employed.
+    </div>
+
+    <div class="settings-card">
+      <h3>Data Management</h3>
+      <div class="setting-row">
+        <div><div class="sl">Export as CSV</div><div class="sd">Open in Excel / Numbers</div></div>
+        <button class="btn-submit" style="width:auto;padding:9px 18px;font-size:0.82rem;margin:0;background:linear-gradient(135deg,var(--mint),#00b894);color:#0d0a0f;font-weight:700" onclick="exportCSV()">CSV</button>
+      </div>
+      <div class="setting-row">
+        <div><div class="sl">Export All Data (JSON)</div><div class="sd">Full backup with settings</div></div>
+        <button class="btn-submit" style="width:auto;padding:9px 18px;font-size:0.82rem;margin:0" onclick="exportData()">JSON</button>
+      </div>
+      <div class="setting-row">
+        <div><div class="sl">Import Data</div><div class="sd">Restore from JSON backup</div></div>
+        <button class="btn-submit" style="width:auto;padding:9px 18px;font-size:0.82rem;margin:0;background:linear-gradient(135deg,var(--purple),#8b5cf6)" onclick="document.getElementById('import-file').click()">Import</button>
+        <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(this)">
+      </div>
+    </div>
+
+    <div style="text-align:center; padding: 20px; color:var(--muted); font-size:0.75rem;">
+      Ambassador HQ v1.0 ✨<br>All data stored locally on your device
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── DATA ───────────────────────────────────────────────
+let events = JSON.parse(localStorage.getItem('amb_events') || '[]');
+let settings = JSON.parse(localStorage.getItem('amb_settings') || '{"federal":12,"state":0,"mileage":70}');
+let charts = {};
+
+function saveEvents() { localStorage.setItem('amb_events', JSON.stringify(events)); }
+function saveSettings() {
+  settings.federal = parseFloat(document.getElementById('s-federal').value) || 12;
+  settings.state = parseFloat(document.getElementById('s-state').value) || 0;
+  settings.mileage = parseFloat(document.getElementById('s-mileage').value) || 67;
+  localStorage.setItem('amb_settings', JSON.stringify(settings));
+  updateDashboard();
+}
+
+// ─── TABS ────────────────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  event.target.classList.add('active');
+  if (name === 'dashboard') updateDashboard();
+  if (name === 'events') renderEvents();
+  if (name === 'calendar') renderCalendar();
+  if (name === 'settings') loadSettings();
+}
+
+// ─── LIVE CALC ───────────────────────────────────────────
+['f-rate','f-hours','f-commission','f-mile-start','f-mile-end','f-gas','f-outfit','f-beauty','f-other'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('input', updateCalcPreview);
+});
+
+function updateCalcPreview() {
+  const rate = parseFloat(document.getElementById('f-rate').value) || 0;
+  const hours = parseFloat(document.getElementById('f-hours').value) || 0;
+  const commission = parseFloat(document.getElementById('f-commission').value) || 0;
+  const ms = parseFloat(document.getElementById('f-mile-start').value) || 0;
+  const me = parseFloat(document.getElementById('f-mile-end').value) || 0;
+  const gas = parseFloat(document.getElementById('f-gas').value) || 0;
+  const outfit = parseFloat(document.getElementById('f-outfit').value) || 0;
+  const beauty = parseFloat(document.getElementById('f-beauty').value) || 0;
+  const other = parseFloat(document.getElementById('f-other').value) || 0;
+  const gross = rate > 0 ? rate * hours : commission;
+  const miles = Math.max(0, me - ms);
+  const totalExp = gas + outfit + beauty + other;
+  const net = gross - totalExp;
+  document.getElementById('cp-gross').textContent = '$' + gross.toFixed(2);
+  document.getElementById('cp-exp').textContent = '-$' + totalExp.toFixed(2);
+  document.getElementById('cp-miles').textContent = miles + ' mi';
+  document.getElementById('cp-net').textContent = (net >= 0 ? '' : '-') + '$' + Math.abs(net).toFixed(2);
+  document.getElementById('cp-net').style.color = net >= 0 ? 'var(--gold)' : 'var(--danger)';
+}
+
+// ─── SAVE JOB ────────────────────────────────────────────
+function saveJob() {
+  const date = document.getElementById('f-date').value;
+  const type = document.getElementById('f-type').value;
+  const rate = parseFloat(document.getElementById('f-rate').value) || 0;
+  const hours = parseFloat(document.getElementById('f-hours').value) || 0;
+  const commission = parseFloat(document.getElementById('f-commission').value) || 0;
+  if (!date || (hours === 0 && commission === 0)) { alert('Please enter hours worked or a total commission!'); return; }
+  const ms = parseFloat(document.getElementById('f-mile-start').value) || 0;
+  const me = parseFloat(document.getElementById('f-mile-end').value) || 0;
+  const gas = parseFloat(document.getElementById('f-gas').value) || 0;
+  const outfit = parseFloat(document.getElementById('f-outfit').value) || 0;
+  const beauty = parseFloat(document.getElementById('f-beauty').value) || 0;
+  const other = parseFloat(document.getElementById('f-other').value) || 0;
+  const miles = Math.max(0, me - ms);
+  const totalPay = rate > 0 ? rate * hours : commission;
+  const totalExp = gas + outfit + beauty + other;
+  const net = totalPay - totalExp;
+  events.push({ id: Date.now(), date, type, rate, hours, commission, totalPay, mileStart: ms, mileEnd: me, miles, gas, outfit, beauty, other, totalExp, net });
+  saveEvents();
+  // Reset
+  ['f-date','f-rate','f-hours','f-commission','f-mile-start','f-mile-end','f-gas','f-outfit','f-beauty','f-other'].forEach(id => document.getElementById(id).value = '');
+  updateCalcPreview();
+  updateDashboard();
+  // Flash success
+  const btn = document.querySelector('.btn-submit');
+  btn.textContent = '✅ Saved!';
+  setTimeout(() => btn.textContent = '✨ Save This Event', 1800);
+}
+
+// ─── DASHBOARD ───────────────────────────────────────────
+function updateDashboard() {
+  const totalGross = events.reduce((s, e) => s + e.totalPay, 0);
+  const totalExp = events.reduce((s, e) => s + e.totalExp, 0);
+  const totalNet = events.reduce((s, e) => s + e.net, 0);
+  const totalHours = events.reduce((s, e) => s + e.hours, 0);
+  const totalMiles = events.reduce((s, e) => s + e.miles, 0);
+  const margin = totalGross > 0 ? (totalNet / totalGross * 100) : 0;
+  const effHourly = totalHours > 0 ? totalNet / totalHours : 0;
+
+  document.getElementById('stat-gross').textContent = '$' + totalGross.toFixed(0);
+  document.getElementById('stat-jobs').textContent = events.length + ' event' + (events.length !== 1 ? 's' : '');
+  document.getElementById('stat-net').textContent = '$' + totalNet.toFixed(0);
+  document.getElementById('stat-margin').textContent = margin.toFixed(1) + '% margin';
+  document.getElementById('stat-expenses').textContent = '$' + totalExp.toFixed(0);
+  document.getElementById('stat-miles-total').textContent = totalMiles + ' mi driven';
+  document.getElementById('stat-hours').textContent = totalHours.toFixed(1) + 'h';
+  document.getElementById('stat-hourly').textContent = '$' + effHourly.toFixed(2) + '/hr effective';
+
+  // Tax estimate
+  const mileDeduct = (totalMiles * (settings.mileage / 100));
+  const netForSE = Math.max(0, totalNet - mileDeduct);
+  const seTax = netForSE * 0.9235 * 0.153;
+  const seDeduct = seTax / 2;
+  const taxableIncome = Math.max(0, netForSE - seDeduct);
+  const fedTax = taxableIncome * (settings.federal / 100);
+  const stateTax = taxableIncome * (settings.state / 100);
+  const setAside = totalNet * 0.30;
+
+  document.getElementById('tax-net-income').textContent = '$' + netForSE.toFixed(2);
+  document.getElementById('tax-se').textContent = '$' + seTax.toFixed(2);
+  document.getElementById('tax-se-deduct').textContent = '$' + seDeduct.toFixed(2);
+  document.getElementById('tax-federal').textContent = '$' + (fedTax + stateTax).toFixed(2);
+  document.getElementById('tax-setaside').textContent = '$' + setAside.toFixed(2);
+  document.getElementById('tax-mileage').textContent = '$' + mileDeduct.toFixed(2);
+
+  // Badges
+  renderBadges(totalGross, events.length, totalMiles, totalHours);
+  renderCharts();
+}
+
+function renderBadges(gross, count, miles, hours) {
+  const badges = [
+    { emoji: '💼', label: 'Events', val: count },
+    { emoji: '⭐', label: 'Top Rate', val: events.length ? '$' + Math.max(...events.map(e=>e.rate)).toFixed(0)+'/hr' : '$0' },
+    { emoji: '🚗', label: 'Miles', val: miles },
+    { emoji: '⏱', label: 'Hours', val: hours.toFixed(1)+'h' },
+  ];
+  document.getElementById('badge-row').innerHTML = badges.map(b =>
+    `<div class="badge"><div class="bi">${b.emoji}</div><div class="bl">${b.label}</div><div class="bv">${b.val}</div></div>`
+  ).join('');
+}
+
+// ─── CHARTS ──────────────────────────────────────────────
+const C = { gold:'#f5c842', rose:'#f07ea3', mint:'#7effd4', purple:'#c084fc', danger:'#ff6b8a', muted:'#8b7aa0' };
+
+function destroyChart(id) { if (charts[id]) { charts[id].destroy(); delete charts[id]; } }
+
+function renderCharts() {
+  if (!events.length) return;
+  renderMonthly();
+  renderDonut();
+  renderProfitBar();
+  renderTypes();
+}
+
+function renderMonthly() {
+  destroyChart('monthly');
+  const byMonth = {};
+  events.forEach(e => {
+    const m = e.date.substring(0,7);
+    if (!byMonth[m]) byMonth[m] = { pay: 0, exp: 0 };
+    byMonth[m].pay += e.totalPay;
+    byMonth[m].exp += e.totalExp;
+  });
+  const labels = Object.keys(byMonth).sort().map(m => {
+    const [y,mo] = m.split('-');
+    return new Date(y, mo-1).toLocaleString('default',{month:'short', year:'2-digit'});
+  });
+  const pays = Object.keys(byMonth).sort().map(m => byMonth[m].pay);
+  const exps = Object.keys(byMonth).sort().map(m => byMonth[m].exp);
+  const ctx = document.getElementById('chart-monthly').getContext('2d');
+  charts['monthly'] = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Gross Pay', data: pays, backgroundColor: 'rgba(126,255,212,0.7)', borderRadius: 8, borderSkipped: false },
+        { label: 'Expenses', data: exps, backgroundColor: 'rgba(240,126,163,0.6)', borderRadius: 8, borderSkipped: false }
+      ]
+    },
+    options: chartDefaults('bar')
+  });
+}
+
+function renderDonut() {
+  destroyChart('donut');
+  const gas = events.reduce((s,e) => s+e.gas, 0);
+  const outfit = events.reduce((s,e) => s+e.outfit, 0);
+  const beauty = events.reduce((s,e) => s+e.beauty, 0);
+  const other = events.reduce((s,e) => s+e.other, 0);
+  const net = events.reduce((s,e) => s+e.net, 0);
+  const data = [gas, outfit, beauty, other, Math.max(0,net)];
+  const labels = ['⛽ Gas', '👗 Outfit', '💅 Beauty', '📦 Other', '💰 Net Profit'];
+  const colors = [C.rose, C.purple, C.gold, C.muted, C.mint];
+  const ctx = document.getElementById('chart-donut').getContext('2d');
+  charts['donut'] = new Chart(ctx, {
+    type: 'doughnut',
+    data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 2, borderColor: '#1e1728', hoverOffset: 8 }] },
+    options: {
+      cutout: '60%',
+      plugins: {
+        legend: { position: 'bottom', labels: { color: C.muted, font: { size: 12, family: 'DM Sans' }, padding: 12, usePointStyle: true } },
+        tooltip: { callbacks: { label: ctx => ' $' + ctx.parsed.toFixed(2) } }
+      }
+    }
+  });
+}
+
+function renderProfitBar() {
+  destroyChart('profit');
+  const sorted = [...events].sort((a,b) => new Date(a.date) - new Date(b.date));
+  const labels = sorted.map(e => {
+    const d = new Date(e.date+'T00:00:00');
+    return d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  });
+  const nets = sorted.map(e => e.net);
+  const colors = nets.map(n => n >= 0 ? 'rgba(126,255,212,0.75)' : 'rgba(255,107,138,0.75)');
+  const ctx = document.getElementById('chart-profit').getContext('2d');
+  charts['profit'] = new Chart(ctx, {
+    type: 'bar',
+    data: { labels, datasets: [{ label: 'Net Profit', data: nets, backgroundColor: colors, borderRadius: 8, borderSkipped: false }] },
+    options: chartDefaults('bar')
+  });
+}
+
+function renderTypes() {
+  destroyChart('types');
+  const typeCounts = {};
+  const typeNet = {};
+  events.forEach(e => {
+    typeCounts[e.type] = (typeCounts[e.type] || 0) + 1;
+    typeNet[e.type] = (typeNet[e.type] || 0) + e.net;
+  });
+  const labels = Object.keys(typeCounts);
+  const counts = labels.map(l => typeCounts[l]);
+  const ctx = document.getElementById('chart-types').getContext('2d');
+  charts['types'] = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{ label: 'Events', data: counts, backgroundColor: 'rgba(192,132,252,0.7)', borderRadius: 8, borderSkipped: false }]
+    },
+    options: { ...chartDefaults('bar'), indexAxis: 'y' }
+  });
+}
+
+function chartDefaults(type) {
+  return {
+    responsive: true,
+    plugins: {
+      legend: { display: false },
+      tooltip: { callbacks: { label: ctx => ' $' + ctx.parsed.y?.toFixed(2) ?? ctx.parsed.toFixed(2) } }
+    },
+    scales: {
+      x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: C.muted, font: { size: 11, family: 'DM Sans' } } },
+      y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: C.muted, font: { size: 11, family: 'DM Sans' } } }
+    }
+  };
+}
+
+// ─── EVENTS LIST ─────────────────────────────────────────
+let activeFilter = 'All';
+
+function renderEvents(filter) {
+  if (filter) activeFilter = filter;
+  const list = document.getElementById('events-list');
+  const types = ['All', ...new Set(events.map(e => e.type))];
+
+  // Update filter pills
+  const bar = document.getElementById('filter-bar');
+  bar.innerHTML = types.map(t =>
+    `<button class="filter-pill ${t === activeFilter ? 'active' : ''}" onclick="filterEvents('${t}', this)">${t}</button>`
+  ).join('');
+
+  const filtered = activeFilter === 'All' ? events : events.filter(e => e.type === activeFilter);
+  const sorted = [...filtered].sort((a,b) => new Date(b.date) - new Date(a.date));
+
+  if (!sorted.length) {
+    list.innerHTML = `<div class="empty-state"><div class="emoji">✨</div><p>No events yet.<br>Log your first gig!</p></div>`;
+    return;
+  }
+
+  list.innerHTML = sorted.map(e => `
+    <div class="event-card">
+      <button class="btn-delete" onclick="deleteEvent(${e.id})">✕</button>
+      <div class="event-header">
+        <div>
+          <div class="event-type">${e.type}</div>
+          <div class="event-date">${new Date(e.date+'T00:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'})}</div>
+        </div>
+        <div class="event-profit">${e.net >= 0 ? '' : '-'}$${Math.abs(e.net).toFixed(2)}</div>
+      </div>
+      <div class="event-chips">
+        <span class="chip chip-pay">💵 $${e.totalPay.toFixed(2)} pay</span>
+        <span class="chip chip-hours">⏱ ${e.hours}h${e.rate > 0 ? ' @ $'+e.rate+'/hr' : e.commission > 0 ? ' · commission' : ''}</span>
+        <span class="chip chip-miles">🚗 ${e.miles} mi</span>
+        <span class="chip chip-exp">💸 $${e.totalExp.toFixed(2)} exp</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function filterEvents(type, el) {
+  activeFilter = type;
+  document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  renderEvents();
+}
+
+function deleteEvent(id) {
+  if (!confirm('Delete this event?')) return;
+  events = events.filter(e => e.id !== id);
+  saveEvents();
+  renderEvents();
+  updateDashboard();
+}
+
+// ─── SETTINGS ────────────────────────────────────────────
+function loadSettings() {
+  document.getElementById('s-federal').value = settings.federal;
+  document.getElementById('s-state').value = settings.state;
+  document.getElementById('s-mileage').value = settings.mileage;
+}
+
+// ─── EXPORT / IMPORT ─────────────────────────────────────
+function exportData() {
+  const data = JSON.stringify({ events, settings }, null, 2);
+  const blob = new Blob([data], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'ambassador_hq_backup.json';
+  a.click();
+}
+
+function importData(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const d = JSON.parse(e.target.result);
+      if (d.events) { events = d.events; saveEvents(); }
+      if (d.settings) { settings = d.settings; localStorage.setItem('amb_settings', JSON.stringify(settings)); }
+      updateDashboard();
+      alert('✅ Data imported successfully!');
+    } catch { alert('❌ Invalid backup file.'); }
+  };
+  reader.readAsText(file);
+}
+
+// ─── CSV EXPORT ──────────────────────────────────────────
+function exportCSV() {
+  const headers = ['Date','Event Type','Pay Rate ($/hr)','Hours Worked','Commission','Total Pay','Start Mileage','End Mileage','Total Miles','Gas','Outfit','Nails/Beauty','Other Expenses','Total Expenses','Net Profit'];
+  const rows = events.map(e => [
+    e.date, `"${e.type}"`, e.rate, e.hours, (e.commission||0).toFixed(2), e.totalPay.toFixed(2),
+    e.mileStart, e.mileEnd, e.miles,
+    e.gas.toFixed(2), e.outfit.toFixed(2), e.beauty.toFixed(2), e.other.toFixed(2),
+    e.totalExp.toFixed(2), e.net.toFixed(2)
+  ].join(','));
+  const csv = [headers.join(','), ...rows].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'ambassador_hq_events.csv';
+  a.click();
+}
+
+// ─── CALENDAR ────────────────────────────────────────────
+let calYear, calMonth;
+
+function renderCalendar(yearOverride, monthOverride) {
+  const now = new Date();
+  if (calYear === undefined) calYear = now.getFullYear();
+  if (calMonth === undefined) calMonth = now.getMonth();
+  if (yearOverride !== undefined) calYear = yearOverride;
+  if (monthOverride !== undefined) calMonth = monthOverride;
+
+  const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('cal-title').textContent = monthNames[calMonth] + ' ' + calYear;
+
+  // Build event lookup by date string
+  const byDate = {};
+  events.forEach(e => {
+    if (!byDate[e.date]) byDate[e.date] = [];
+    byDate[e.date].push(e);
+  });
+
+  const firstDay = new Date(calYear, calMonth, 1).getDay();
+  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+  const todayStr = now.toISOString().substring(0, 10);
+
+  const dows = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+  let html = dows.map(d => `<div class="cal-dow">${d}</div>`).join('');
+
+  // Empty cells before first day
+  for (let i = 0; i < firstDay; i++) html += `<div class="cal-day empty"></div>`;
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const mm = String(calMonth + 1).padStart(2, '0');
+    const dd = String(d).padStart(2, '0');
+    const dateStr = `${calYear}-${mm}-${dd}`;
+    const dayEvents = byDate[dateStr] || [];
+    const isToday = dateStr === todayStr;
+    const hasEvent = dayEvents.length > 0;
+    const multi = dayEvents.length > 1;
+    const totalNet = dayEvents.reduce((s, e) => s + e.net, 0);
+
+    let cls = 'cal-day';
+    if (isToday) cls += ' today';
+    if (multi) cls += ' multi-event';
+    else if (hasEvent) cls += ' has-event';
+
+    const onclick = hasEvent ? `onclick="showCalDetail('${dateStr}')"` : '';
+    const profitLabel = hasEvent ? `<div class="day-profit">$${totalNet.toFixed(0)}</div>` : '';
+    const dot = hasEvent ? `<div class="day-dot"></div>` : '';
+
+    html += `<div class="${cls}" ${onclick}>${d}${dot}${profitLabel}</div>`;
+  }
+
+  document.getElementById('cal-grid').innerHTML = html;
+  document.getElementById('cal-event-detail').style.display = 'none';
+  renderCalMonthSummary();
+}
+
+function calNav(dir) {
+  calMonth += dir;
+  if (calMonth > 11) { calMonth = 0; calYear++; }
+  if (calMonth < 0) { calMonth = 11; calYear--; }
+  renderCalendar(calYear, calMonth);
+}
+
+function showCalDetail(dateStr) {
+  const dayEvents = events.filter(e => e.date === dateStr);
+  if (!dayEvents.length) return;
+
+  const d = new Date(dateStr + 'T00:00:00');
+  const label = d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+  document.getElementById('cal-detail-title').textContent = '📅 ' + label;
+
+  const html = dayEvents.map(e => `
+    <div style="background:var(--surface);border-radius:12px;padding:14px;margin-bottom:10px;border:1px solid var(--border);">
+      <div style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;margin-bottom:8px;">${e.type}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:0.8rem;">
+        <div style="color:var(--muted)">Gross Pay</div><div style="color:var(--mint);font-weight:600;">$${e.totalPay.toFixed(2)}</div>
+        <div style="color:var(--muted)">Hours</div><div>${e.hours}h @ $${e.rate}/hr</div>
+        <div style="color:var(--muted)">Expenses</div><div style="color:var(--danger);">-$${e.totalExp.toFixed(2)}</div>
+        <div style="color:var(--muted)">Miles</div><div style="color:var(--gold);">${e.miles} mi</div>
+        <div style="color:var(--muted);font-weight:700;">Net Profit</div>
+        <div style="color:var(--gold);font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700;">${e.net >= 0 ? '' : '-'}$${Math.abs(e.net).toFixed(2)}</div>
+      </div>
+    </div>
+  `).join('');
+
+  document.getElementById('cal-detail-body').innerHTML = html;
+  document.getElementById('cal-event-detail').style.display = 'block';
+  document.getElementById('cal-event-detail').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function renderCalMonthSummary() {
+  const mm = String(calMonth + 1).padStart(2, '0');
+  const prefix = `${calYear}-${mm}`;
+  const monthEvents = events.filter(e => e.date.startsWith(prefix));
+  const el = document.getElementById('cal-month-summary');
+
+  if (!monthEvents.length) {
+    el.innerHTML = `<div style="color:var(--muted);font-size:0.85rem;text-align:center;padding:12px 0;">No events this month</div>`;
+    return;
+  }
+
+  const sorted = [...monthEvents].sort((a, b) => new Date(a.date) - new Date(b.date));
+  const totalPay = monthEvents.reduce((s, e) => s + e.totalPay, 0);
+  const totalNet = monthEvents.reduce((s, e) => s + e.net, 0);
+  const totalHrs = monthEvents.reduce((s, e) => s + e.hours, 0);
+
+  el.innerHTML = sorted.map(e => {
+    const d = new Date(e.date + 'T00:00:00');
+    const dateLabel = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return `<div class="cal-summary-row">
+      <div>
+        <div class="cs-name">${e.type}</div>
+        <div class="cs-date">${dateLabel} · ${e.hours}h</div>
+      </div>
+      <div class="cs-profit">${e.net >= 0 ? '' : '-'}$${Math.abs(e.net).toFixed(2)}</div>
+    </div>`;
+  }).join('') + `
+    <div style="margin-top:12px;padding:12px;background:var(--surface);border-radius:12px;border:1px solid var(--border);display:flex;justify-content:space-between;font-size:0.83rem;">
+      <div style="text-align:center;"><div style="color:var(--muted);font-size:0.7rem;text-transform:uppercase;margin-bottom:3px;">Events</div><div style="font-weight:700;">${monthEvents.length}</div></div>
+      <div style="text-align:center;"><div style="color:var(--muted);font-size:0.7rem;text-transform:uppercase;margin-bottom:3px;">Hours</div><div style="font-weight:700;">${totalHrs.toFixed(1)}</div></div>
+      <div style="text-align:center;"><div style="color:var(--muted);font-size:0.7rem;text-transform:uppercase;margin-bottom:3px;">Gross</div><div style="color:var(--mint);font-weight:700;">$${totalPay.toFixed(0)}</div></div>
+      <div style="text-align:center;"><div style="color:var(--muted);font-size:0.7rem;text-transform:uppercase;margin-bottom:3px;">Net</div><div style="color:var(--gold);font-weight:700;font-family:'Playfair Display',serif;">$${totalNet.toFixed(0)}</div></div>
+    </div>`;
+}
+
+// ─── INIT ────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  // Set today's date default
+  document.getElementById('f-date').valueAsDate = new Date();
+  loadSettings();
+  updateDashboard();
+});
+</script>
+</body>
+</html>
